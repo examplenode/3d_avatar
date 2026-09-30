@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AR Sci-Fi Weapons</title>
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #ui {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      gap: 8px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px;
+      border-radius: 10px;
+      transition: opacity 0.4s;
+    }
+    #ui input {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      width: 220px;
+      font-size: 14px;
+    }
+    #ui button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #4a90e2;
+      color: white;
+      font-weight: bold;
+    }
+    #ui button:active { background: #357ab8; }
+
+    #status {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    #subtitles {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 90%;
+      max-width: 720px;
+      text-align: center;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: opacity 0.4s;
+    }
+    #userSubtitle,
+    #avatarSubtitle {
+      display: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 18px;
+      line-height: 1.35;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+    #userSubtitle {
+      color: #cfcfcf;
+      background: rgba(0,0,0,0.55);
+      font-style: italic;
+      align-self: center;
+      max-width: 90%;
+    }
+    #avatarSubtitle {
+      color: #ffffff;
+      background: rgba(20,60,120,0.75);
+      font-weight: 500;
+      align-self: center;
+      max-width: 100%;
+    }
+
+    .hidden {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    #introOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: linear-gradient(160deg, #0b1220 0%, #101c33 60%, #0b1220 100%);
+      color: #eaeef7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-y: auto;
+      transition: opacity 0.5s ease;
+    }
+    #introOverlay .card {
+      max-width: 920px;
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(120,180,255,0.25);
+      border-radius: 18px;
+      padding: 28px 32px 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+    }
+    #introOverlay h1 {
+      font-size: 26px;
+      margin: 0 0 6px;
+      background: linear-gradient(90deg, #7ec8ff, #b18cff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 0.5px;
+    }
+    #introOverlay .subtitle {
+      color: #9db4d6;
+      font-size: 14px;
+      margin: 0 0 22px;
+    }
+    #introOverlay h2 {
+      font-size: 17px;
+      margin: 22px 0 10px;
+      color: #cfe0ff;
+      font-weight: 600;
+      border-left: 3px solid #4a90e2;
+      padding-left: 10px;
+    }
+    #introOverlay table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #introOverlay thead th {
+      background: rgba(74,144,226,0.25);
+      color: #e6f0ff;
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    #introOverlay tbody td {
+      padding: 10px 12px;
+      border-top: 1px solid rgba(120,180,255,0.15);
+      vertical-align: top;
+      line-height: 1.4;
+    }
+    #introOverlay tbody tr:hover {
+      background: rgba(120,180,255,0.07);
+    }
+    #introOverlay tbody td:first-child {
+      font-weight: 600;
+      color: #a9d0ff;
+      white-space: nowrap;
+    }
+    #introOverlay ol.steps {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: #d6e2f5;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    #introOverlay ol.steps li strong {
+      color: #ffd77a;
+    }
+
+    .btnStart {
+      display: block;
+      margin: 26px auto 0;
+      padding: 14px 44px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #0b1220;
+      background: linear-gradient(90deg, #7ec8ff, #b18cff);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(126,200,255,0.35);
+    }
+    .btnStart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(126,200,255,0.5);
+    }
+    .btnStart:active { transform: translateY(0); }
+
+    #helpBtn {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 9999;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(120,180,255,0.5);
+      background: rgba(10,20,40,0.75);
+      color: #cfe0ff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #helpBtn:hover { background: rgba(30,60,110,0.9); }
+
+    @media (max-width: 640px) {
+      #introOverlay .card { padding: 20px 18px 24px; }
+      #introOverlay h1 { font-size: 20px; }
+      #introOverlay table { font-size: 12.5px; }
+      #introOverlay thead th,
+      #introOverlay tbody td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+<body style="margin:0; overflow:hidden">
+
+  <a-scene
+    vr-mode-ui="enabled: false;"
+    renderer="logarithmicDepthBuffer: true;"
+    embedded
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+  >
+    <a-assets>
+      <a-asset-item id="avatarAsset"      src="models/avatar.glb"></a-asset-item>
+      <a-asset-item id="bfgAsset"         src="models/bfg.glb"></a-asset-item>
+      <a-asset-item id="plasmaAsset"      src="models/plasma.glb"></a-asset-item>
+      <a-asset-item id="keybladeAsset"    src="models/keyblade.glb"></a-asset-item>
+      <a-asset-item id="blasterAsset"     src="models/blaster.glb"></a-asset-item>
+      <a-asset-item id="gravityGunAsset"  src="models/gravity_gun.glb"></a-asset-item>
+      <a-asset-item id="spearAsset"       src="models/spear.glb"></a-asset-item>
+    </a-assets>
+
+    <a-entity camera></a-entity>
+
+    <a-marker preset="hiro">
+
+      <a-entity id="avatar"
+        gltf-model="#avatarAsset"
+        animation-mixer
+        position="0 0 0"
+        rotation="-60 0 0"
+        scale="0.5 0.5 0.5">
+      </a-entity>
+
+      <a-entity id="bfgOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="bfgModel"
+          gltf-model="#bfgAsset"
+          visible="false"
+          position="0.8 0 0"
+          rotation="-30 0 0"
+          scale="0.5 0.5 0.5">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="plasmaOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="plasmaModel"
+          gltf-model="#plasmaAsset"
+          visible="false"
+          position="0 0.7 0"
+          rotation="0 0 0"
+          scale="0.2 0.2 0.2">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="keybladeOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="keybladeModel"
+          gltf-model="#keybladeAsset"
+          visible="false"
+          position="0.8 0 0"
+          rotation="-60 0 0"
+          scale="0.1 0.1 0.1">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="blasterOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="blasterModel"
+          gltf-model="#blasterAsset"
+          visible="false"
+          position="0.8 0 0"
+          scale="0.004 0.004 0.004">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="gravityGunOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="gravityGunModel"
+          gltf-model="#gravityGunAsset"
+          visible="false"
+          position="0.8 0 0"
+          rotation="-60 0 0"
+          scale="0.01 0.01 0.01">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="spearOrbit"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear;">
+        <a-entity id="spearModel"
+          gltf-model="#spearAsset"
+          visible="false"
+          position="0.8 0 0"
+          rotation="-60 0 0"
+          scale="0.3 0.3 0.3">
+        </a-entity>
+      </a-entity>
+
+    </a-marker>
+  </a-scene>
+
+  <div id="introOverlay">
+    <div class="card">
+      <h1>AR Sci-Fi Weapons — умный аватар</h1>
+      <p class="subtitle">
+        Тема: оружие из популярных игр (Sci-Fi). Аватар отвечает на вопросы
+        и показывает 3D-модель оружия рядом с собой.
+      </p>
+
+      <h2>Что умеет это приложение</h2>
+      <table>
+        <thead>
+          <tr><th>Элемент</th><th>Назначение</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3D-аватар</td><td>Появляется на AR-маркере hiro, проигрывает idle и переключается на talk при ответе</td></tr>
+          <tr><td>Голосовой ввод</td><td>Кнопка 🎤 — задайте вопрос голосом (Web Speech API)</td></tr>
+          <tr><td>Текстовый ввод</td><td>Поле «Или введите вопрос» — для случаев, когда микрофон недоступен</td></tr>
+          <tr><td>Голосовой ответ</td><td>Аватар озвучивает ответ и выводит его субтитрами</td></tr>
+          <tr><td>3D-модель оружия</td><td>Выбранное оружие появляется и вращается по орбите вокруг аватара</td></tr>
+          <tr><td>Субтитры</td><td>«Вы: …» — что услышал микрофон, «Аватар: …» — ответ</td></tr>
+        </tbody>
+      </table>
+
+      <h2>О чём можно спросить (6 видов оружия)</h2>
+      <table>
+        <thead>
+          <tr><th>Оружие</th><th>Игра</th><th>Что расскажет аватар</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>BFG 9000</td><td>Doom</td><td>Медленная, но разрушительная — принцип баланса</td></tr>
+          <tr><td>Плазма-ган</td><td>Halo</td><td>Точность и управление перегревом</td></tr>
+          <tr><td>Клинок-ключ</td><td>Kingdom Hearts</td><td>Оружие как символ, а не только средство боя</td></tr>
+          <tr><td>Бластер</td><td>Star Wars</td><td>Дизайн звука — удар по натянутой струне</td></tr>
+          <tr><td>Gravity Gun</td><td>Half-Life 2</td><td>Физика вместо урона, «немая» перезарядка</td></tr>
+          <tr><td>Копьё</td><td>God of War</td><td>Сила броска и возврат к владельцу</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Как пользоваться (пошагово)</h2>
+      <ol class="steps">
+        <li><strong>Распечатайте или откройте на втором экране</strong> маркер <em>hiro</em>.</li>
+        <li>Нажмите <strong>«Начать»</strong> ниже и разрешите доступ к камере.</li>
+        <li>Наведите камеру на маркер — появится 3D-аватар.</li>
+        <li>Нажмите <strong>🎤 Говорить</strong> и задайте вопрос, например: <em>«Что такое BFG?»</em></li>
+        <li>Или введите текст в поле и нажмите <strong>«Отправить»</strong>.</li>
+        <li>Аватар озвучит ответ, покажет субтитры и выведет 3D-модель оружия на орбиту.</li>
+        <li>Чтобы вернуться к инструкции — нажмите <strong>«Справка»</strong> в правом верхнем углу.</li>
+      </ol>
+
+      <button class="btnStart" id="startBtn">▶ Начать</button>
+    </div>
+  </div>
+
+  <button id="helpBtn">? Справка</button>
+
+  <div id="ui" class="hidden">
+    <button id="micBtn">🎤 Говорить</button>
+    <input id="textInput" type="text" placeholder="Или введите вопрос...">
+    <button id="sendBtn">Отправить</button>
+  </div>
+
+  <div id="status" class="hidden"></div>
+
+  <div id="subtitles" class="hidden">
+    <div id="userSubtitle"></div>
+    <div id="avatarSubtitle"></div>
+  </div>
+
+  <script>
+    
+    const introOverlay = document.querySelector('#introOverlay');
+    const uiEl         = document.querySelector('#ui');
+    const subsEl       = document.querySelector('#subtitles');
+    const statusEl     = document.querySelector('#status');
+
+    function hideIntro() {
+      introOverlay.style.opacity = '0';
+      setTimeout(() => {
+        introOverlay.style.display = 'none';
+      }, 500);
+      uiEl.classList.remove('hidden');
+      subsEl.classList.remove('hidden');
+    }
+
+    function showIntro() {
+      introOverlay.style.display = 'flex';
+      requestAnimationFrame(() => {
+        introOverlay.style.opacity = '1';
+      });
+      uiEl.classList.add('hidden');
+      subsEl.classList.add('hidden');
+    }
+
+    document.querySelector('#startBtn').addEventListener('click', hideIntro);
+    document.querySelector('#helpBtn').addEventListener('click', showIntro);
+
+   
+    AFRAME.registerComponent('avatar-controller', {
+      init: function () {
+        this.idleClip = null;
+        this.talkClip = null;
+        this.firstClip = null;
+
+        this.el.addEventListener('model-loaded', () => {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh || !mesh.animations || mesh.animations.length === 0) {
+            console.warn('В модели нет анимаций');
+            return;
+          }
+
+          const names = mesh.animations.map(a => a.name);
+          console.log('Анимации в модели:', names);
+
+          this.firstClip = names[0];
+
+          this.idleClip = names.find(n =>
+            /idle|ожид|stand|wait/i.test(n)
+          ) || null;
+
+          this.talkClip = names.find(n =>
+            /talk|гов|speak|gesture|wave|explain/i.test(n)
+          ) || null;
+
+          if (!this.idleClip) this.idleClip = this.firstClip;
+
+          if (!this.talkClip) {
+            this.talkClip = names.length > 1 ? names[1] : this.firstClip;
+          }
+
+          console.log('Выбран idle:', this.idleClip, '| talk:', this.talkClip);
+
+          this.playIdle();
+        });
+      },
+
+      playClip: function (name) {
+        if (!name) return;
+        this.el.setAttribute('animation-mixer', {
+          clip: name,
+          loop: 'repeat',
+          crossFadeDuration: 0.5
+        });
+      },
+
+      playIdle: function () { this.playClip(this.idleClip); },
+      playTalk: function () { this.playClip(this.talkClip); }
+    });
+
+   
+    const userSubtitleEl   = document.querySelector('#userSubtitle');
+    const avatarSubtitleEl = document.querySelector('#avatarSubtitle');
+
+    let userSubtitleTimer   = null;
+    let avatarSubtitleTimer = null;
+
+    function showUserSubtitle(text) {
+      userSubtitleEl.textContent = 'Вы: ' + text;
+      userSubtitleEl.style.display = 'block';
+      clearTimeout(userSubtitleTimer);
+      userSubtitleTimer = setTimeout(() => {
+        userSubtitleEl.style.display = 'none';
+      }, 4000);
+    }
+
+    function showAvatarSubtitle(text) {
+      avatarSubtitleEl.textContent = text;
+      avatarSubtitleEl.style.display = 'block';
+      clearTimeout(avatarSubtitleTimer);
+    }
+    function hideAvatarSubtitle() {
+      clearTimeout(avatarSubtitleTimer);
+      avatarSubtitleTimer = setTimeout(() => {
+        avatarSubtitleEl.style.display = 'none';
+      }, 2000);
+    }
+
+   
+    const SpeechRecognitionClass =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    if (SpeechRecognitionClass) {
+      recognition = new SpeechRecognitionClass();
+      recognition.lang = 'ru-RU';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const userText = event.results[0][0].transcript;
+        console.log('Распознано:', userText);
+        showUserSubtitle(userText);
+        processQuery(userText);
+      };
+
+      recognition.onerror = (event) => {
+        console.warn('Ошибка распознавания:', event.error);
+        showStatus('Ошибка распознавания: ' + event.error);
+      };
+
+      recognition.onend = () => {
+        hideStatus();
+      };
+    } else {
+      console.warn('Web Speech API не поддерживается этим браузером.');
+    }
+
+    document.querySelector('#micBtn').addEventListener('click', () => {
+      if (!recognition) {
+        showStatus('Голосовой ввод не поддерживается. Используйте текст.');
+        return;
+      }
+      try {
+        showStatus('Слушаю...');
+        recognition.start();
+      } catch (e) {
+        console.warn(e);
+      }
+    });
+
+    function speak(text, onEnd) {
+      showAvatarSubtitle(text);
+
+      if (!window.speechSynthesis) {
+        hideAvatarSubtitle();
+        if (onEnd) onEnd();
+        return;
+      }
+
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ru-RU';
+
+      utterance.onend = () => {
+        hideAvatarSubtitle();
+        if (onEnd) onEnd();
+      };
+      utterance.onerror = () => {
+        hideAvatarSubtitle();
+        if (onEnd) onEnd();
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+ 
+    const WEAPONS = [
+      {
+        keys: ['bfg', 'би эф джи', 'би-эф-джи', 'пушка'],
+        model: '#bfgModel',
+        answer: 'BFG 9000 — мощная энергетическая пушка из Doom. ' +
+                'Она сбалансирована как медленная, но чрезвычайно разрушительная.'
+      },
+      {
+        keys: ['плазма', 'plasma', 'плазменная пушка'],
+        model: '#plasmaModel',
+        answer: 'Плазменная пушка из Halo — точное и скорострельное оружие, ' +
+                'которое требует управления перегревом.'
+      },
+      {
+        keys: ['клинок', 'keyblade', 'клинок-ключ', 'ключ'],
+        model: '#keybladeModel',
+        answer: 'Клинок-ключ из Kingdom Hearts — это не только оружие, но и ' +
+                'символический артефакт, связанный с сердцем владельца.'
+      },
+      {
+        keys: ['бластер', 'blaster', 'star wars', 'звёздные войны'],
+        model: '#blasterModel',
+        answer: 'Бластер из Star Wars стреляет сгустками энергии. ' +
+                'Дизайн звука основан на ударе по натянутой струне.'
+      },
+      {
+        keys: ['гравитационная', 'gravity gun', 'гравипушка', 'half-life', 'гравити ган'],
+        model: '#gravityGunModel',
+        answer: 'Гравитационная пушка из Half-Life 2 манипулирует физическими объектами. ' +
+                'Её анимация перезарядки почти отсутствует — это часть дизайна.'
+      },
+      {
+        keys: ['копьё', 'копье', 'spear', 'god of war'],
+        model: '#spearModel',
+        answer: 'Копьё из God of War — метательное оружие с акцентом на силу броска ' +
+                'и возврат к владельцу.'
+      }
+    ];
+
+    function processQuery(text) {
+      const lower = text.toLowerCase();
+      let found = null;
+
+      for (const w of WEAPONS) {
+        if (w.keys.some(k => lower.includes(k))) {
+          found = w;
+          break;
+        }
+      }
+
+      const avatar = document.querySelector('#avatar');
+      const ctrl = avatar ? avatar.components['avatar-controller'] : null;
+
+      if (found) {
+        showWeaponModel(found.model);
+        if (ctrl) ctrl.playTalk();
+
+        speak(found.answer, () => {
+          if (ctrl) ctrl.playIdle();
+        });
+      } else {
+        speak('Извините, я не знаю такое оружие.');
+      }
+    }
+
+    function showWeaponModel(selector) {
+      document.querySelectorAll('[id$="Orbit"]').forEach(orbitEl => {
+        const modelEl = orbitEl.firstElementChild;
+        if (modelEl) modelEl.setAttribute('visible', 'false');
+        orbitEl.setAttribute('animation', 'enabled', false);
+      });
+
+      if (!selector) return;
+
+      const modelEl = document.querySelector(selector);
+      if (!modelEl) return;
+
+      modelEl.setAttribute('visible', 'true');
+
+      const orbitEl = modelEl.parentElement;
+      if (orbitEl) {
+        orbitEl.setAttribute('animation', 'enabled', true);
+      }
+    }
+
+  
+    document.querySelector('#sendBtn').addEventListener('click', () => {
+      const input = document.querySelector('#textInput');
+      const text = input.value;
+      if (text.trim()) {
+        showUserSubtitle(text);
+        processQuery(text);
+        input.value = '';
+      }
+    });
+
+    document.querySelector('#textInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.querySelector('#sendBtn').click();
+      }
+    });
+
+   
+    function showStatus(msg) {
+      statusEl.textContent = msg;
+      statusEl.style.display = 'block';
+    }
+    function hideStatus() {
+      statusEl.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

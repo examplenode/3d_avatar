@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Просмотр моделей</title>
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+  <script src="https://unpkg.com/aframe-orbit-controls@1.3.0/dist/aframe-orbit-controls.min.js"></script>
+</head>
+<body style="margin:0">
+
+  <a-scene background="color: #222">
+    <a-assets>
+      <a-asset-item id="avatarAsset"     src="models/avatar.glb"></a-asset-item>
+      <a-asset-item id="bfgAsset"        src="models/bfg.glb"></a-asset-item>
+      <a-asset-item id="plasmaAsset"     src="models/plasma.glb"></a-asset-item>
+      <a-asset-item id="keybladeAsset"   src="models/keyblade.glb"></a-asset-item>
+      <a-asset-item id="blasterAsset"    src="models/blaster.glb"></a-asset-item>
+      <a-asset-item id="gravityGunAsset" src="models/gravity_gun.glb"></a-asset-item>
+      <a-asset-item id="spearAsset"      src="models/spear.glb"></a-asset-item>
+    </a-assets>
+
+
+    <a-entity
+      gltf-model="#avatarAsset"
+      animation-mixer="clip: idle; loop: repeat;"
+      position="-3 0 -4"
+      scale="1 1 1">
+    </a-entity>
+
+    <a-entity gltf-model="#bfgAsset"        position="0 0 -4" scale="0.5 0.5 0.5"></a-entity>
+    <a-entity gltf-model="#plasmaAsset"     position="2 0 -4" scale="0.5 0.5 0.5"></a-entity>
+    <a-entity gltf-model="#keybladeAsset"   position="4 0 -4" scale="0.5 0.5 0.5"></a-entity>
+    <a-entity gltf-model="#blasterAsset"    position="-3 0 -7" scale="0.01 0.01 0.01"></a-entity>
+    <a-entity gltf-model="#gravityGunAsset" position="0 0 -7" scale="0.02 0.02 0.02"></a-entity>
+    <a-entity gltf-model="#spearAsset"      position="2 0 -7" scale="0.5 0.5 0.5"></a-entity>
+    <a-entity light="type: ambient; intensity: 0.6"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+
+    <!-- Камера с орбитальным управлением (вращение мышкой) -->
+    <a-entity
+      camera
+      position="0 1.6 0"
+      orbit-controls="target: 1 0 -5; initialPosition: 1 3 3; minDistance: 1; maxDistance: 30">
+    </a-entity>
+
+    <a-sky color="#222"></a-sky>
+  </a-scene>
+
+</body>
+</html>
